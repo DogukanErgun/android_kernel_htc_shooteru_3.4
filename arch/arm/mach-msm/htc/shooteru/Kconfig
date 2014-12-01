@@ -2,10 +2,10 @@ config BOARD_HEADER_FILE
 	string "HTC board specific header file name"
 	default ""
 
-config MACH_PYRAMID
+config MACH_SHOOTERU
 	depends on ARCH_MSM8X60
 	select MACH_HTC
         select REMOVE_SMI_2X_CLK
-	bool "HTC Pyramid"
+	bool "HTC Shooteru"
 	help
-	  Support for the HTC PYRAMID device.
+	  Support for the HTC SHOOTERU device.
