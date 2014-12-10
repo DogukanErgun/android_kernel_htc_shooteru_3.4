@@ -49,7 +49,7 @@
 #define MSM_FB_SIZE roundup(MSM_FB_PRIM_BUF_SIZE + MSM_FB_EXT_BUF_SIZE, 4096)
 
 #define PHY_BASE_ADDR1       0x48000000
-#define SIZE_ADDR1           0x28000000
+#define SIZE_ADDR1           0x38000000
 
 #define MSM_ION_MM_FW_SIZE   0x200000
 #define MSM_ION_MM_SIZE      0x3D00000
@@ -69,6 +69,8 @@
 
 /* Direct Keys */
 #define SHOOTERU_GPIO_KEY_POWER          (125)
+#define SHOOTERU_GPIO_SW_LCM_3D		(64)
+#define SHOOTERU_GPIO_SW_LCM_2D		(68)
 
 /* Battery */
 #define SHOOTERU_GPIO_MBAT_IN            (61)
