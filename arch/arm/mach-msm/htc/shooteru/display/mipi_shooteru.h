@@ -35,8 +35,8 @@ int mipi_shooteru_device_register(struct msm_panel_info *pinfo,
 
 #define DEFAULT_BRIGHTNESS              83
 
-#define BRI_SETTING_MIN                 30
-#define BRI_SETTING_DEF                 143
+#define BRI_SETTING_MIN                 20
+#define BRI_SETTING_DEF                 113
 #define BRI_SETTING_MAX                 255
 
 #define SHARP_PWM_MIN                   9	/* 3.5% of max pwm */
@@ -46,6 +46,11 @@ int mipi_shooteru_device_register(struct msm_panel_info *pinfo,
 #define AUO_PWM_MIN                     9	/* 3.5% of max pwm */
 #define AUO_PWM_DEFAULT                 87	/* 34% of max pwm  */
 #define AUO_PWM_MAX                     255	/* 100% of max pwm  */
+
+
+#define PWM_MIN				8
+#define PWM_DEFAULT			91
+#define PWM_MAX				232
 
 #endif  /* MIPI_SHOOTERU_BLUE_H */
 
