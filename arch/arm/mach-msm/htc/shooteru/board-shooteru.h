@@ -68,9 +68,9 @@
 /* GPIO definition */
 
 /* Direct Keys */
-#define SHOOTERU_GPIO_KEY_POWER          (125)
 #define SHOOTERU_GPIO_SW_LCM_3D		(64)
 #define SHOOTERU_GPIO_SW_LCM_2D		(68)
+#define SHOOTERU_GPIO_KEY_POWER         (125)
 
 /* Battery */
 #define SHOOTERU_GPIO_MBAT_IN            (61)
@@ -101,6 +101,7 @@
 
 /* Audio */
 #define SHOOTERU_AUD_CODEC_RST        (67)
+#define SHOOTERU_AUD_MIC_SEL		PMGPIO(14)
 
 /* BT */
 #define SHOOTERU_GPIO_BT_HOST_WAKE      (45)
@@ -147,6 +148,15 @@
 #define SHOOTERU_SPI_CS                 (35)
 #define SHOOTERU_SPI_CLK                (36)
 
+
+
+/* LCM */
+#define SHOOTERU_CTL_3D_1		(131)
+#define SHOOTERU_CTL_3D_2		(132)
+#define SHOOTERU_CTL_3D_3		(133)
+#define SHOOTERU_CTL_3D_4		(134)
+#define SHOOTERU_LCM_3D_PDz		(135)
+
 /* PMIC */
 
 /* PMIC GPIO definition */
@@ -155,11 +165,12 @@
 #define SHOOTERU_VOL_DN             PMGPIO(17)
 #define SHOOTERU_AUD_HP_EN          PMGPIO(18)
 #define SHOOTERU_HAP_ENABLE         PMGPIO(19)
+#define SHOOTERU_3DLCM_PD	    PMGPIO(20)
 #define SHOOTERU_AUD_QTR_RESET      PMGPIO(21)
 #define SHOOTERU_TP_RST             PMGPIO(23)
 #define SHOOTERU_GREEN_LED          PMGPIO(24)
 #define SHOOTERU_AMBER_LED          PMGPIO(25)
-#define SHOOTERU_AUD_MIC_SEL        PMGPIO(26)
+#define SHOOTERU_3DCLK		    PMGPIO(26)
 #define SHOOTERU_CHG_STAT	   PMGPIO(33)
 #define SHOOTERU_SDC3_DET           PMGPIO(34)
 #define SHOOTERU_PLS_INT            PMGPIO(35)
