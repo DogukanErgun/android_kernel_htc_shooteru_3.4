@@ -1255,3 +1255,4 @@ late_initcall(htc_battery_init);
 MODULE_DESCRIPTION("HTC Battery Driver");
 MODULE_LICENSE("GPL");
 
+

@@ -1214,3 +1214,4 @@ const struct battery_info_reply* htc_battery_core_get_batt_info_rep(void)
 	return &battery_core_info.rep;
 }
 EXPORT_SYMBOL_GPL(htc_battery_core_get_batt_info_rep);
+
