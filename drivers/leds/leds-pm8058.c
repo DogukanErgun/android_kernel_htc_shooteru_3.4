@@ -192,7 +192,94 @@ static void pm8058_pwm_led_brightness_set(struct led_classdev *led_cdev,
 	}
 }
 
-static void pm8058_drvx_led_brightness_set(struct led_classdev *led_cdev,
+extern void pm8058_drvx_led_brightness_set(struct led_classdev *led_cdev,
+					   enum led_brightness brightness)
+{
+	struct pm8058_led_data *ldata;
+	int *pduties;
+	int id, mode;
+	int lut_flag;
+	int milliamps;
+	int enable = 0;
+
+	ldata = container_of(led_cdev, struct pm8058_led_data, ldev);
+
+	pwm_disable(ldata->pwm_led);
+	cancel_delayed_work_sync(&ldata->led_delayed_work);
+
+	id = bank_to_id(ldata->bank);
+	mode = (id == PM_PWM_LED_KPD) ? PM_PWM_CONF_PWM1 :
+					PM_PWM_CONF_PWM1 + (ldata->bank - 4);
+
+	brightness = (brightness > LED_FULL) ? LED_FULL : brightness;
+	brightness = (brightness < LED_OFF) ? LED_OFF : brightness;
+	LED_INFO_LOG("%s: bank %d brightness %d +\n", __func__,
+	       ldata->bank, brightness);
+
+	enable = (brightness) ? 1 : 0;
+	if (strcmp(ldata->ldev.name, "charming-led") == 0)
+		charming_led_enable(enable);
+
+	lut_flag = ldata->lut_flag & ~(PM_PWM_LUT_LOOP | PM_PWM_LUT_REVERSE);
+	virtual_key_state = enable;
+	if (flag_hold_virtual_key == 1) {
+		LED_INFO_LOG("%s, Return control by button_backlight flash \n", __func__);
+		return;
+	}
+
+	if (brightness) {
+		milliamps = (ldata->flags & PM8058_LED_DYNAMIC_BRIGHTNESS_EN) ?
+			    ldata->out_current * brightness / LED_FULL :
+			    ldata->out_current;
+			printk(KERN_INFO "%s: flags %d current %d\n", __func__,
+			    ldata->flags,milliamps);
+			pm8058_pwm_config_led(ldata->pwm_led, id, mode, milliamps);
+		if (ldata->flags & PM8058_LED_LTU_EN) {
+			pduties = &duty_array[ldata->start_index];
+			pm8058_pwm_lut_config(ldata->pwm_led,
+					      ldata->period_us,
+					      pduties,
+					      ldata->duty_time_ms,
+					      ldata->start_index,
+					      ldata->duites_size,
+					      0, 0,
+					      lut_flag);
+			pm8058_pwm_lut_enable(ldata->pwm_led, 0);
+			pm8058_pwm_lut_enable(ldata->pwm_led, 1);
+		} else {
+			pwm_config(ldata->pwm_led, 64000, 64000);
+			pwm_enable(ldata->pwm_led);
+		}
+	} else {
+		if (ldata->flags & PM8058_LED_LTU_EN) {
+			wake_lock_timeout(&pmic_led_wake_lock,HZ*2);
+			pduties = &duty_array[ldata->start_index +
+					  ldata->duites_size];
+			pm8058_pwm_lut_config(ldata->pwm_led,
+					      ldata->period_us,
+					      pduties,
+					      ldata->duty_time_ms,
+					      ldata->start_index +
+					      ldata->duites_size,
+					      ldata->duites_size,
+					      0, 0,
+					      lut_flag);
+			pm8058_pwm_lut_enable(ldata->pwm_led, 1);
+			queue_delayed_work(g_led_work_queue,
+					   &ldata->led_delayed_work,
+					   msecs_to_jiffies(ldata->duty_time_ms * ldata->duites_size));
+
+			LED_INFO_LOG("%s: bank %d fade out brightness %d -\n", __func__,
+			ldata->bank, brightness);
+			return;
+		} else
+			pwm_disable(ldata->pwm_led);
+		pm8058_pwm_config_led(ldata->pwm_led, id, mode, 0);
+	}
+	LED_INFO_LOG("%s: bank %d brightness %d -\n", __func__, ldata->bank, brightness);
+}
+
+/*static void pm8058_drvx_led_brightness_set(struct led_classdev *led_cdev,
 					   enum led_brightness brightness)
 {
 	struct pm8058_led_data *ldata;
@@ -275,7 +362,7 @@ static void pm8058_drvx_led_brightness_set(struct led_classdev *led_cdev,
 		pm8058_pwm_config_led(ldata->pwm_led, id, mode, 0);
 	}
 	LED_INFO_LOG("%s: bank %d brightness %d -\n", __func__, ldata->bank, brightness);
-}
+}*/
 
 static ssize_t pm8058_led_blink_store(struct device *dev,
 				       struct device_attribute *attr,

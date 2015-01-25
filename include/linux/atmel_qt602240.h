@@ -379,6 +379,9 @@
 
 #define TW_SHIFT				1
 
+/* report 2 kind of finger data */
+#define REPORT_BOTH_DATA			1
+
 #define SYN_AND_REPORT_TYPE_A           0
 #define SYN_AND_REPORT_TYPE_B           1
 
@@ -443,6 +446,7 @@ struct atmel_i2c_platform_data {
 	int (*power)(int on);
 	uint8_t unlock_attr;
 	uint8_t report_type;
+	uint8_t report_both;
 	int8_t config_T6[6];
 	int8_t config_T7[3];
 	int8_t config_T8[10];
@@ -466,6 +470,7 @@ struct atmel_i2c_platform_data {
 	int8_t config_T55[4];
 	int8_t config_T58[11];
 	uint8_t object_crc[3];
+	int8_t cable_config[6];
 	int8_t cable_config_T7[3];
 	int8_t cable_config_T8[10];
 	int8_t cable_config_T9[35];
@@ -480,7 +485,6 @@ struct atmel_i2c_platform_data {
 	uint8_t GCAF_level[5];
 	struct atmel_mferr mferr_config;
 	struct atmel_mferr cfm_calb;
-	struct atmel_mferr cable_config;
 	uint8_t noiseLine_config[8];
 	uint8_t workaround;
 #if defined(CONFIG_TOUCH_KEY_FILTER)

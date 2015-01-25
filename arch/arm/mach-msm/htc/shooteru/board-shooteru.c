@@ -1097,154 +1097,192 @@ static void __init msm8x60_allocate_memory_regions(void)
         msm8x60_allocate_fb_region();
 }
 
-static int shooteru_ts_cy8c_set_rst(int on)
+
+static int shooteru_ts_atmel_power(int on)
 {
-	struct pm8058_gpio_cfg {
-		int                gpio;
-		struct pm_gpio cfg;
-	};
+	printk(KERN_INFO "%s: power %d\n", __func__, on);
 
-	struct pm8058_gpio_cfg tp_rst[] = {
-		{ /* TW RST Set LOW */
-			PM8058_GPIO_PM_TO_SYS(SHOOTERU_TP_RST),
-			{
-				.direction	= PM_GPIO_DIR_OUT,
-				.output_value	= 0,
-				.output_buffer	= PM_GPIO_OUT_BUF_CMOS,
-				.pull		= PM_GPIO_PULL_NO,
-				.out_strength	= PM_GPIO_STRENGTH_HIGH,
-				.function	= PM_GPIO_FUNC_NORMAL,
-				.vin_sel	= PM8058_GPIO_VIN_S3,
-				.inv_int_pol	= 0,
-			}
-		},
-		{ /* TW RST Set HIGH */
-			PM8058_GPIO_PM_TO_SYS(SHOOTERU_TP_RST),
-			{
-				.direction	= PM_GPIO_DIR_OUT,
-				.output_value	= 1,
-				.output_buffer	= PM_GPIO_OUT_BUF_CMOS,
-				.pull		= PM_GPIO_PULL_NO,
-				.out_strength	= PM_GPIO_STRENGTH_HIGH,
-				.function	= PM_GPIO_FUNC_NORMAL,
-				.vin_sel	= PM8058_GPIO_VIN_S3,
-				.inv_int_pol	= 0,
-			}
-		},
-	};
-	return pm8xxx_gpio_config(tp_rst[on].gpio,	&tp_rst[on].cfg);
-}
-
-static int shooteru_ts_cy8c_power(int on)
-{
-	printk(KERN_INFO "%s():\n", __func__);
-	if (on)
-		shooteru_ts_cy8c_set_rst(1);
-
+	gpio_set_value(PM8058_GPIO_PM_TO_SYS(SHOOTERU_TP_RST), 0);
+	msleep(5);
+	gpio_set_value(PM8058_GPIO_PM_TO_SYS(SHOOTERU_TP_RST), 1);
+	msleep(40);
 	return 0;
 }
 
-static int shooteru_ts_cy8c_reset(void)
-{
-	printk(KERN_INFO "[TP] HW reset touch.\n");
-	shooteru_ts_cy8c_set_rst(0);
-	msleep(10);
-	shooteru_ts_cy8c_set_rst(1);
-	msleep(200);
-
-	return 0;
-}
-
-struct cy8c_i2c_platform_data shooteru_ts_cy8c_data[] = {
+struct atmel_i2c_platform_data shooteru_ts_atmel_data[] = {
 	{
-		.version = 0x0C,
-		.timeout = 1,
+		.version = 0x020,
+		.source = 1, /* ALPS, Nissha */
+		.abs_x_min = 5,
+		.abs_x_max = 1018,
+		.abs_y_min = 7,
+		.abs_y_max = 905,
+		.abs_pressure_min = 0,
+		.abs_pressure_max = 255,
+		.abs_width_min = 0,
+		.abs_width_max = 20,
+		.gpio_irq = SHOOTERU_TP_ATT_N,
+		.power = shooteru_ts_atmel_power,
 		.unlock_attr = 1,
-		.abs_x_min = 11,
-		.abs_x_max = 1012,
-		.abs_y_min = 6,
-		.abs_y_max = 940,
-		.abs_pressure_min = 0,
-		.abs_pressure_max = 255,
-		.abs_width_min = 0,
-		.abs_width_max = 512,
-		.power = shooteru_ts_cy8c_power,
-		.gpio_irq = SHOOTERU_TP_ATT_N_XB,
-		/*.filter_level = {40, 80, 942, 982},*/
-		.reset = shooteru_ts_cy8c_reset,
+		.report_both = REPORT_BOTH_DATA,
+		.config_T6 = {0, 0, 0, 0, 0, 0},
+		.config_T7 = {16, 8, 50},
+		.config_T8 = {9, 0, 5, 2, 0, 0, 5, 20, 5, 192},
+		.config_T9 = {139, 0, 0, 20, 10, 0, 16, 30, 2, 1, 0, 2, 2, 0, 4, 14, 10, 10, 0, 0, 0, 0, 248, 228, 5, 5, 145, 50, 139, 80, 15, 10},
+		.config_T15 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T18 = {0, 0},
+		.config_T19 = {0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T20 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T22 = {15, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 7, 18, 255, 255, 0},
+		.config_T23 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T24 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T25 = {3, 0, 16, 39, 124, 21, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T28 = {0, 0, 4, 4, 8, 60},
+		.object_crc = {0x20, 0xCD, 0xC5},
+		.cable_config = {35, 25, 8, 16},
+		.call_tchthr = {45, 50},
+		.locking_config = {20},
+		.noise_config = {45, 2, 35},
+		.GCAF_level = {20, 24, 28, 40, 63},
 	},
-
 	{
-		.version = 0x08,
-		.timeout = 1,
-		.abs_x_min = 11,
-		.abs_x_max = 1012,
-		.abs_y_min = 6,
-		.abs_y_max = 940,
+		.version = 0x020,
+		.source = 0, /* TPK */
+		.abs_x_min = 5,
+		.abs_x_max = 1018,
+		.abs_y_min = 7,
+		.abs_y_max = 905,
 		.abs_pressure_min = 0,
 		.abs_pressure_max = 255,
 		.abs_width_min = 0,
-		.abs_width_max = 512,
-		.power = shooteru_ts_cy8c_power,
-		.gpio_irq = SHOOTERU_TP_ATT_N_XB,
-		/*.filter_level = {40, 80, 942, 982},*/
+		.abs_width_max = 20,
+		.gpio_irq = SHOOTERU_TP_ATT_N,
+		.power = shooteru_ts_atmel_power,
+		.unlock_attr = 1,
+		.report_both = REPORT_BOTH_DATA,
+		.config_T6 = {0, 0, 0, 0, 0, 0},
+		.config_T7 = {16, 8, 50},
+		.config_T8 = {8, 0, 5, 2, 0, 0, 5, 20, 5, 192},
+		.config_T9 = {139, 0, 0, 20, 10, 0, 16, 30, 2, 1, 0, 2, 2, 0, 4, 14, 10, 10, 0, 0, 0, 0, 6, 0, 15, 14, 140, 43, 147, 77, 15, 10},
+		.config_T15 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T18 = {0, 0},
+		.config_T19 = {0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T20 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T22 = {15, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 7, 18, 255, 255, 0},
+		.config_T23 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T24 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T25 = {3, 0, 16, 39, 124, 21, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T28 = {0, 0, 4, 4, 8, 60},
+		.object_crc = {0xA6, 0x13, 0x52},
+		.cable_config = {35, 25, 8, 16},
+		.call_tchthr = {45, 50},
+		.locking_config = {20},
+		.noise_config = {45, 2, 35},
+		.GCAF_level = {20, 24, 28, 40, 63},
 	},
-
 	{
-		.version = 0x00,
-		.timeout = 1,
-		.abs_x_min = 11,
-		.abs_x_max = 1012,
-		.abs_y_min = 6,
-		.abs_y_max = 940,
+		.version = 0x016,
+		.source = 1, /* ALPS, Nissha */
+		.abs_x_min = 5,
+		.abs_x_max = 1018,
+		.abs_y_min = 7,
+		.abs_y_max = 905,
 		.abs_pressure_min = 0,
 		.abs_pressure_max = 255,
 		.abs_width_min = 0,
-		.abs_width_max = 512,
-		.power = shooteru_ts_cy8c_power,
-		.gpio_irq = SHOOTERU_TP_ATT_N_XB,
-		.reset = shooteru_ts_cy8c_reset,
+		.abs_width_max = 20,
+		.gpio_irq = SHOOTERU_TP_ATT_N,
+		.power = shooteru_ts_atmel_power,
+		.unlock_attr = 1,
+		.report_both = REPORT_BOTH_DATA,
+		.config_T6 = {0, 0, 0, 0, 0, 0},
+		.config_T7 = {16, 8, 50},
+		.config_T8 = {9, 0, 5, 2, 0, 0, 5, 20},
+		.config_T9 = {139, 0, 0, 20, 10, 0, 16, 30, 2, 1, 0, 2, 2, 0, 4, 14, 10, 10, 0, 0, 0, 0, 248, 228, 5, 5, 145, 50, 139, 80, 15},
+		.config_T15 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T18 = {0, 0},
+		.config_T19 = {0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T20 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T22 = {15, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 7, 18, 255, 255, 0},
+		.config_T23 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T24 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T25 = {3, 0, 16, 39, 124, 21, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T27 = {0, 0, 0, 0, 0, 0, 0},
+		.config_T28 = {0, 0, 4, 4, 8, 60},
+		.cable_config = {35, 25, 8, 16},
+		.GCAF_level = {20, 24, 28, 40, 63},
+	},
+	{
+		.version = 0x016,
+		.source = 0, /* TPK */
+		.abs_x_min = 5,
+		.abs_x_max = 1018,
+		.abs_y_min = 7,
+		.abs_y_max = 905,
+		.abs_pressure_min = 0,
+		.abs_pressure_max = 255,
+		.abs_width_min = 0,
+		.abs_width_max = 20,
+		.gpio_irq = SHOOTERU_TP_ATT_N,
+		.power = shooteru_ts_atmel_power,
+		.unlock_attr = 1,
+		.report_both = REPORT_BOTH_DATA,
+		.config_T6 = {0, 0, 0, 0, 0, 0},
+		.config_T7 = {16, 8, 50},
+		.config_T8 = {8, 0, 5, 2, 0, 0, 5, 20},
+		.config_T9 = {139, 0, 0, 20, 10, 0, 16, 30, 2, 1, 0, 2, 2, 0, 4, 14, 10, 10, 0, 0, 0, 0, 6, 0, 15, 14, 140, 43, 147, 77, 15},
+		.config_T15 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T18 = {0, 0},
+		.config_T19 = {0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T20 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T22 = {15, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 7, 18, 255, 255, 0},
+		.config_T23 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T24 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T25 = {3, 0, 16, 39, 124, 21, 0, 0, 0, 0, 0, 0, 0, 0},
+		.config_T27 = {0, 0, 0, 0, 0, 0, 0},
+		.config_T28 = {0, 0, 4, 4, 8, 60},
+		.cable_config = {35, 25, 8, 16},
+		.GCAF_level = {20, 24, 28, 40, 63},
 	},
 };
+
 
 #define PVT_VERSION	0x80
 
-static void shooteru_ts_cy8c_set_system_rev(uint8_t rev)
-{
-	ssize_t i = 0;
-
-	if (rev >= PVT_VERSION)
-		for (i = 0; i < sizeof(shooteru_ts_cy8c_data)/sizeof(struct cy8c_i2c_platform_data); i++)
-			shooteru_ts_cy8c_data[i].auto_reset = 1;
-}
 
 static struct i2c_board_info msm_i2c_gsbi5_info[] = {
 	{
-		I2C_BOARD_INFO(CYPRESS_TMA_NAME, 0x67),
-		.platform_data = &shooteru_ts_cy8c_data,
-		.irq = MSM_GPIO_TO_INT(SHOOTERU_TP_ATT_N_XB)
+		I2C_BOARD_INFO(ATMEL_QT602240_NAME, 0x94 >> 1),
+		.platform_data = &shooteru_ts_atmel_data,
+		.irq = MSM_GPIO_TO_INT(SHOOTERU_TP_ATT_N)
 	},
 };
-
 static ssize_t shooteru_virtual_keys_show(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf,
-		__stringify(EV_KEY) ":" __stringify(KEY_HOME)	":62:1015:110:100"
-		":" __stringify(EV_KEY) ":" __stringify(KEY_MENU)   ":200:1015:106:100"
-		":" __stringify(EV_KEY) ":" __stringify(KEY_BACK)   ":340:1015:120:100"
-		":" __stringify(EV_KEY) ":" __stringify(KEY_SEARCH) ":482:1015:110:100"
-		"\n");
+	if (system_rev < 2) /* XA, XB */
+		return sprintf(buf,
+			__stringify(EV_KEY) ":" __stringify(KEY_HOME)   ":70:1040:70:80"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_MENU)   ":190:1040:76:80"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_BACK)   ":345:1040:80:80"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_SEARCH) ":468:1040:70:80"
+			"\n");
+	else /* XC */
+		return sprintf(buf,
+			__stringify(EV_KEY) ":" __stringify(KEY_HOME)   ":70:1020:90:90"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_MENU)   ":190:1020:100:90"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_BACK)   ":345:1020:100:90"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_SEARCH) ":468:1020:90:90"
+			"\n");
 }
 
 static struct kobj_attribute shooteru_virtual_keys_attr = {
 	.attr = {
-		.name = "virtualkeys.cy8c-touchscreen",
+		.name = "virtualkeys.atmel-touchscreen",
 		.mode = S_IRUGO,
 	},
 	.show = &shooteru_virtual_keys_show,
 };
-
 static struct attribute *shooteru_properties_attrs[] = {
 	&shooteru_virtual_keys_attr.attr,
 	NULL
@@ -2157,6 +2195,36 @@ static struct i2c_registry msm8x60_i2c_devices[] __initdata = {
 };
 #endif 
 
+static struct mpu3050_platform_data mpu3050_data_XC = {
+	.int_config = 0x10,
+	.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
+	.level_shifter = 0,
+
+	.accel = {
+		.get_slave_descr = get_accel_slave_descr,
+		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
+		.bus = EXT_SLAVE_BUS_SECONDARY,
+		.address = 0x30 >> 1,
+		.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
+	},
+
+	.compass = {
+		.get_slave_descr = get_compass_slave_descr,
+		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
+		.bus = EXT_SLAVE_BUS_PRIMARY,
+		.address = 0x1A >> 1,
+		.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
+	},
+};
+
+static struct i2c_board_info __initdata mpu3050_GSBI10_boardinfo_XC[] = {
+	{
+		I2C_BOARD_INFO("mpu3050", 0xD0 >> 1),
+		.irq = MSM_GPIO_TO_INT(SHOOTERU_GYRO_INT),
+		.platform_data = &mpu3050_data_XC,
+	},
+};
+
 static void __init register_i2c_devices(void)
 {
 #ifdef CONFIG_I2C
@@ -2175,6 +2243,16 @@ static void __init register_i2c_devices(void)
 	}
 
 	if (system_rev >= 1) {
+		struct atmel_i2c_platform_data *pdata;
+
+		pdata = msm_i2c_gsbi5_info[0].platform_data;
+		pdata[0].gpio_irq = SHOOTERU_TP_ATT_N_XC;
+		pdata[1].gpio_irq = SHOOTERU_TP_ATT_N_XC;
+		msm_i2c_gsbi5_info[0].irq = MSM_GPIO_TO_INT(SHOOTERU_TP_ATT_N_XC);
+
+		i2c_register_board_info(MSM_GSBI10_QUP_I2C_BUS_ID,
+			mpu3050_GSBI10_boardinfo_XC, ARRAY_SIZE(mpu3050_GSBI10_boardinfo_XC));
+
 		if (ps_type == 1) {
 			i2c_register_board_info(MSM_GSBI10_QUP_I2C_BUS_ID,
 				i2c_isl29028_devices,
@@ -2195,6 +2273,8 @@ static void __init register_i2c_devices(void)
 
 #endif
 }
+
+
 
 static void __init msm8x60_init_uart12dm(void)
 {
@@ -2420,7 +2500,7 @@ static void __init shooteru_init(void)
 #if defined(CONFIG_SPI_QUP) || defined(CONFIG_SPI_QUP_MODULE)
         platform_device_register(&msm_gsbi1_qup_spi_device);
 #endif
-	shooteru_ts_cy8c_set_system_rev(system_rev);
+	//shooteru_ts_cy8c_set_system_rev(system_rev);
 
 	register_i2c_devices();
 

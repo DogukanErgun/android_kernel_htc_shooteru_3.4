@@ -13,6 +13,8 @@
 #ifndef __LEDS_PMIC8058_H__
 #define __LEDS_PMIC8058_H__
 
+#include <linux/leds.h>
+
 enum pmic8058_leds {
 	PMIC8058_ID_LED_KB_LIGHT = 1,
 	PMIC8058_ID_LED_0,
@@ -36,5 +38,8 @@ struct pmic8058_leds_platform_data {
 
 int pm8058_set_flash_led_current(enum pmic8058_leds id, unsigned mA);
 int pm8058_set_led_current(enum pmic8058_leds id, unsigned mA);
+
+extern void pm8058_drvx_led_brightness_set(struct led_classdev *led_cdev,
+		enum led_brightness brightness);
 
 #endif /* __LEDS_PMIC8058_H__ */

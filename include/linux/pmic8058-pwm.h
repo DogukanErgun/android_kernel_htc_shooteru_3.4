@@ -132,6 +132,11 @@ int pm8058_pwm_lut_config(struct pwm_device *pwm, int period_us,
 			  int duty_pct[], int duty_time_ms, int start_idx,
 			  int len, int pause_lo, int pause_hi, int flags);
 
+/*
+ * pwm_configure - change a PWM device configuration
+ */
+int pwm_configure(struct pwm_device *pwm, struct pm8058_pwm_period *pwm_conf, int bypass_lut, int pwm_value);
+
 /**
  * pm8058_pwm_lut_enable - control a PWM device to start/stop LUT ramp
  *
