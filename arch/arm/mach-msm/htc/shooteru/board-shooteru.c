@@ -1910,10 +1910,10 @@ static void __init shooteru_reserve(void)
 
 #ifdef CONFIG_MSM8X60_AUDIO
 static uint32_t msm_spi_gpio[] = {
-	GPIO_CFG(SHOOTERU_SPI_DO,  1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA),
-	GPIO_CFG(SHOOTERU_SPI_DI,  1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA),
-	GPIO_CFG(SHOOTERU_SPI_CS,  1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA),
-	GPIO_CFG(SHOOTERU_SPI_CLK, 1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA),
+	GPIO_CFG(SHOOTERU_SPI_DO,  1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SHOOTERU_SPI_DI,  1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),
+	GPIO_CFG(SHOOTERU_SPI_CS,  1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SHOOTERU_SPI_CLK, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
 };
 
 static uint32_t auxpcm_gpio_table[] = {
@@ -1932,9 +1932,10 @@ static void msm_auxpcm_init(void)
 }
 
 static struct tpa2051d3_platform_data tpa2051d3_pdata = {
-	.gpio_tpa2051_spk_en = SHOOTERU_AUD_HP_EN,
-	.spkr_cmd = {0x00, 0x82, 0x00, 0x07, 0xCD, 0x4F, 0x0D},
-	.hsed_cmd = {0x00, 0x8C, 0x20, 0x57, 0xCD, 0x4F, 0x0D},
+	.gpio_tpa2051_spk_en = SHOOTERU_AUD_HANDSET_ENO,
+	.spkr_cmd = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	.hsed_cmd = {0x00, 0x0C, 0x25, 0x57, 0x6D, 0x4D, 0x0D},
+	.rece_cmd = {0x00, 0x02, 0x25, 0x57, 0x0D, 0x4D, 0x0D},
 };
 #define TPA2051D3_I2C_SLAVE_ADDR	(0xE0 >> 1)
 

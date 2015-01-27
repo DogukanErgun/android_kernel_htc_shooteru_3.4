@@ -318,9 +318,9 @@ void __init shooteru_gpio_mpp_init(void)
           /* Audio Microphone Selector */
           PM8XXX_GPIO_INIT(PM8058_GPIO_PM_TO_SYS(SHOOTERU_AUD_MIC_SEL),    /* 26 */
                            PM_GPIO_DIR_OUT, PM_GPIO_OUT_BUF_CMOS, 0, PM_GPIO_PULL_NO,
-                           6, PM_GPIO_STRENGTH_HIGH, PM_GPIO_FUNC_NORMAL, 0, 0),
+                           2, PM_GPIO_STRENGTH_HIGH, PM_GPIO_FUNC_NORMAL, 0, 0),
           /* TPA2051 Power */
-          PM8XXX_GPIO_INIT(PM8058_GPIO_PM_TO_SYS(SHOOTERU_AUD_HP_EN),
+          PM8XXX_GPIO_INIT(PM8058_GPIO_PM_TO_SYS(SHOOTERU_AUD_HP_EN), //SHOOTER_AUD_HANDSET_ENO
                            PM_GPIO_DIR_OUT, PM_GPIO_OUT_BUF_CMOS, 0, PM_GPIO_PULL_NO,
                            6, PM_GPIO_STRENGTH_HIGH, PM_GPIO_FUNC_NORMAL, 0, 0),
           /* Timpani Reset */

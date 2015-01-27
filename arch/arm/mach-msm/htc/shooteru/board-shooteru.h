@@ -67,10 +67,15 @@
 
 /* GPIO definition */
 
+
 /* Direct Keys */
 #define SHOOTERU_GPIO_SW_LCM_3D		(64)
 #define SHOOTERU_GPIO_SW_LCM_2D		(68)
-#define SHOOTERU_GPIO_KEY_POWER         (125)
+#define SHOOTERU_GPIO_KEY_VOL_DOWN	(103)
+#define SHOOTERU_GPIO_KEY_VOL_UP		(104)
+#define SHOOTERU_GPIO_KEY_CAM_STEP2	(115)
+#define SHOOTERU_GPIO_KEY_CAM_STEP1	(123)
+#define SHOOTERU_GPIO_KEY_POWER		(125)
 
 /* Battery */
 #define SHOOTERU_GPIO_MBAT_IN            (61)
@@ -89,6 +94,8 @@
 /* Microp */
 
 /* TP */
+
+#define SHOOTERU_TP_ATT_N_XC   (57)
 #define SHOOTERU_TP_I2C_SDA           (51)
 #define SHOOTERU_TP_I2C_SCL           (52)
 #define SHOOTERU_TP_ATT_N             (65)
@@ -164,6 +171,7 @@
 #define SHOOTERU_VOL_UP             PMGPIO(16)
 #define SHOOTERU_VOL_DN             PMGPIO(17)
 #define SHOOTERU_AUD_HP_EN          PMGPIO(18)
+#define SHOOTERU_AUD_HANDSET_ENO		PMGPIO(18)
 #define SHOOTERU_HAP_ENABLE         PMGPIO(19)
 #define SHOOTERU_3DLCM_PD	    PMGPIO(20)
 #define SHOOTERU_AUD_QTR_RESET      PMGPIO(21)
