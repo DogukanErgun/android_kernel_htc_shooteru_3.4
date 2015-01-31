@@ -1,9 +1,5 @@
 #!/bin/sh
 
-is_there_any_error=false
-
-
-trap 'error' ERR
 #### FOR DEVELOPING ONLY DOES NOT CONTAIN 99kernel INIT SCRIPT TO CONFIG THE KERNEL. ASSUMES YOU ARE DOING A DIRTY FLASH ####
 
 ## time start ##
@@ -14,7 +10,7 @@ time_start=$(date +%s.%N)
 MAKE="9"
 
 ## Build kernel using shooter_defconfig
-export CROSS_COMPILE=/home/dogukan/Workspace/cyanogenmod/prebuilt/linux-x86/toolchain/sm-arm-eabi-4.8/bin/arm-eabi-
+export CROSS_COMPILE=/home/dogukan/Workspace/cyanogenmod/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin/arm-eabi-
 export ARCH=arm
 make shooteru_defconfig
 make -j$MAKE
@@ -55,11 +51,6 @@ echo "${BLDYLW}Total time elapsed: ${TCTCLR}${TXTGRN}$(echo "($time_end - $time_
 fi
 
 
-error(){
-   echo "There are Errors Stop."
-   $is_there_any_error=true
-
-}
 
 
 
