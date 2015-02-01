@@ -33,6 +33,7 @@
 #include <mach/htc_acoustic_8x60.h>
 
 #include "board-shooteru-audio-data.h"
+#include "board-shooteru.h"
 
 extern unsigned int system_rev;
 
@@ -43,9 +44,9 @@ static atomic_t aic3254_ctl = ATOMIC_INIT(0);
 static atomic_t q6_effect_mode = ATOMIC_INIT(-1);
 
 static uint32_t msm_snddev_gpio[] = {
-	GPIO_CFG(108, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(109, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(110, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(108, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(109, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(110, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
 };
 
 #define BIT_SPEAKER	(1 << 0)
@@ -53,16 +54,13 @@ static uint32_t msm_snddev_gpio[] = {
 #define BIT_RECEIVER	(1 << 2)
 #define BIT_FM_SPK	(1 << 3)
 #define BIT_FM_HS	(1 << 4)
-#define SHOOTERU_AUD_CODEC_RST        (67)
-#define SHOOTERU_AUD_HP_EN          PMGPIO(18)
-#define SHOOTERU_AUD_MIC_SEL        PMGPIO(26)
 #define PM8058_GPIO_BASE			NR_MSM_GPIOS
 #define PM8058_GPIO_PM_TO_SYS(pm_gpio)		(pm_gpio + PM8058_GPIO_BASE)
 #define PMGPIO(x) (x-1)
 void shooteru_snddev_bmic_pamp_on(int en);
 static uint32_t msm_aic3254_reset_gpio[] = {
-	GPIO_CFG(SHOOTERU_AUD_CODEC_RST, 0, GPIO_CFG_OUTPUT,
-		GPIO_CFG_PULL_UP, GPIO_CFG_8MA),
+	GPIO_CFG(SHOOTERU_AUD_CODEC_RST, 0,
+		GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
 };
 
 void shooteru_snddev_poweramp_on(int en)
@@ -429,8 +427,6 @@ void shooteru_audio_gpios_init(void)
 
 void __init shooteru_audio_init(void)
 {
-        int i = 0;
-
 	mutex_init(&bt_sco_lock);
 	mutex_init(&mic_lock);
 
@@ -444,13 +440,12 @@ void __init shooteru_audio_init(void)
 #endif
 
 	aic3254_register_ctl_ops(&cops);
-
-	for (i = 0 ; i < ARRAY_SIZE(msm_snddev_gpio); i++)
-		gpio_tlmm_config(msm_snddev_gpio[i], GPIO_CFG_DISABLE);
-
-	/* PMIC GPIO Init (See board-shooteru.c) */
-        shooteru_audio_gpios_init();
-
 	/* Reset AIC3254 */
 	shooteru_reset_3254();
+	gpio_tlmm_config(
+		GPIO_CFG(SHOOTERU_AUD_CDC_LDO_SEL, 0, GPIO_CFG_OUTPUT,
+			GPIO_CFG_NO_PULL, GPIO_CFG_2MA), GPIO_CFG_DISABLE);
+	gpio_tlmm_config(msm_snddev_gpio[0], GPIO_CFG_DISABLE);
+	gpio_tlmm_config(msm_snddev_gpio[1], GPIO_CFG_DISABLE);
+	gpio_tlmm_config(msm_snddev_gpio[2], GPIO_CFG_DISABLE);
 }
