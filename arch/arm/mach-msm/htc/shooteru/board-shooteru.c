@@ -1910,10 +1910,10 @@ static void __init shooteru_reserve(void)
 
 #ifdef CONFIG_MSM8X60_AUDIO
 static uint32_t msm_spi_gpio[] = {
-	GPIO_CFG(SHOOTERU_SPI_DO,  1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(SHOOTERU_SPI_DI,  1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),
-	GPIO_CFG(SHOOTERU_SPI_CS,  1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(SHOOTERU_SPI_CLK, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SHOOTERU_SPI_DO,  1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SHOOTERU_SPI_DI,  1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SHOOTERU_SPI_CS,  1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SHOOTERU_SPI_CLK, 1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
 };
 
 static uint32_t auxpcm_gpio_table[] = {
@@ -2060,49 +2060,15 @@ static struct i2c_board_info i2c_isl29029_devices[] = {
 
 static struct mpu3050_platform_data mpu3050_data = {
 	.int_config = 0x10,
-	.orientation = { -1, 0, 0,
-					0, 1, 0,
-					0, 0, -1 },
+	.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
 	.level_shifter = 0,
 
 	.accel = {
 		.get_slave_descr = get_accel_slave_descr,
 		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
 		.bus = EXT_SLAVE_BUS_SECONDARY,
-		.address = 0x70 >> 1,
-			.orientation = { -1, 0, 0,
-							0, -1, 0,
-							0, 0, 1 },
-
-	},
-
-	.compass = {
-		.get_slave_descr = get_compass_slave_descr,
-		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
-		.bus = EXT_SLAVE_BUS_PRIMARY,
-		.address = 0x18 >> 1,
-			.orientation = { -1, 0, 0,
-							0, 1, 0,
-							0, 0, -1 },
-	},
-};
-
-static struct mpu3050_platform_data mpu3050_data_XB = {
-	.int_config = 0x10,
-	.orientation = { -1, 0, 0,
-					0, 1, 0,
-					0, 0, -1 },
-	.level_shifter = 0,
-
-	.accel = {
-		.get_slave_descr = get_accel_slave_descr,
-		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
-		.bus = EXT_SLAVE_BUS_SECONDARY,
-		.address = 0x70 >> 1,
-			.orientation = { -1, 0, 0,
-							0, -1, 0,
-							0, 0, 1 },
-
+		.address = 0x30 >> 1,
+		.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
 	},
 
 	.compass = {
@@ -2110,9 +2076,29 @@ static struct mpu3050_platform_data mpu3050_data_XB = {
 		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
 		.bus = EXT_SLAVE_BUS_PRIMARY,
 		.address = 0x1A >> 1,
-			.orientation = { -1, 0, 0,
-							0, 1, 0,
-							0, 0, -1 },
+		.orientation = { 1, 0, 0, 0, 1, 0, 0, 0, 1 },
+	},
+};
+
+static struct mpu3050_platform_data mpu3050_data_XC = {
+	.int_config = 0x10,
+	.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
+	.level_shifter = 0,
+
+	.accel = {
+		.get_slave_descr = get_accel_slave_descr,
+		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
+		.bus = EXT_SLAVE_BUS_SECONDARY,
+		.address = 0x30 >> 1,
+		.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
+	},
+
+	.compass = {
+		.get_slave_descr = get_compass_slave_descr,
+		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
+		.bus = EXT_SLAVE_BUS_PRIMARY,
+		.address = 0x1A >> 1,
+		.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
 	},
 };
 
@@ -2125,11 +2111,11 @@ static struct i2c_board_info __initdata mpu3050_GSBI10_boardinfo[] = {
 	},
 };
 
-static struct i2c_board_info __initdata mpu3050_GSBI10_boardinfo_XB[] = {
+static struct i2c_board_info __initdata mpu3050_GSBI10_boardinfo_XC[] = {
 	{
 		I2C_BOARD_INFO("mpu3050", 0xD0 >> 1),
 		.irq = MSM_GPIO_TO_INT(SHOOTERU_GYRO_INT),
-		.platform_data = &mpu3050_data_XB,
+		.platform_data = &mpu3050_data_XC,
 	},
 };
 
@@ -2196,35 +2182,6 @@ static struct i2c_registry msm8x60_i2c_devices[] __initdata = {
 };
 #endif 
 
-static struct mpu3050_platform_data mpu3050_data_XC = {
-	.int_config = 0x10,
-	.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
-	.level_shifter = 0,
-
-	.accel = {
-		.get_slave_descr = get_accel_slave_descr,
-		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
-		.bus = EXT_SLAVE_BUS_SECONDARY,
-		.address = 0x30 >> 1,
-		.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
-	},
-
-	.compass = {
-		.get_slave_descr = get_compass_slave_descr,
-		.adapt_num = MSM_GSBI10_QUP_I2C_BUS_ID, /* The i2c bus to which the mpu device is connected */
-		.bus = EXT_SLAVE_BUS_PRIMARY,
-		.address = 0x1A >> 1,
-		.orientation = { -1, 0, 0, 0, 1, 0, 0, 0, -1 },
-	},
-};
-
-static struct i2c_board_info __initdata mpu3050_GSBI10_boardinfo_XC[] = {
-	{
-		I2C_BOARD_INFO("mpu3050", 0xD0 >> 1),
-		.irq = MSM_GPIO_TO_INT(SHOOTERU_GYRO_INT),
-		.platform_data = &mpu3050_data_XC,
-	},
-};
 
 static void __init register_i2c_devices(void)
 {
@@ -2264,9 +2221,6 @@ static void __init register_i2c_devices(void)
 				ARRAY_SIZE(i2c_isl29029_devices));
 		} else
 			printk(KERN_DEBUG "No Intersil chips\n");
-
-		i2c_register_board_info(MSM_GSBI10_QUP_I2C_BUS_ID,
-				mpu3050_GSBI10_boardinfo_XB, ARRAY_SIZE(mpu3050_GSBI10_boardinfo_XB));
 	} else {
 		i2c_register_board_info(MSM_GSBI10_QUP_I2C_BUS_ID,
 				mpu3050_GSBI10_boardinfo, ARRAY_SIZE(mpu3050_GSBI10_boardinfo));

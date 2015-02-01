@@ -631,7 +631,8 @@ void __init shooteru_init_mmc(void)
 	sdcc_vreg_data[2].vdd_data->set_voltage_sup = 1;
 	sdcc_vreg_data[2].vdd_data->level = 2850000;
 	sdcc_vreg_data[2].vdd_data->always_on = 1;
-	sdcc_vreg_data[2].vdd_data->op_pwr_mode_sup = 1;
+	//sdcc_vreg_data[2].vdd_data->op_pwr_mode_sup = 1;
+	sdcc_vreg_data[2].vdd_data->op_pwr_mode_sup = 0;
 	sdcc_vreg_data[2].vdd_data->lpm_uA = 9000;
 	sdcc_vreg_data[2].vdd_data->hpm_uA = 200000;
 
@@ -643,7 +644,7 @@ void __init shooteru_init_mmc(void)
 	sdcc_vreg_data[2].vddp_data->level = 2850000;
 	sdcc_vreg_data[2].vddp_data->always_on = 1;
 	sdcc_vreg_data[2].vddp_data->op_pwr_mode_sup = 1;
-	sdcc_vreg_data[2].vddp_data->lpm_uA = 10000;
+	sdcc_vreg_data[2].vddp_data->lpm_uA = 2000;
 	sdcc_vreg_data[2].vddp_data->hpm_uA = 16000;
         msm_add_sdcc(3, &msm8x60_sdc3_data);
 #endif

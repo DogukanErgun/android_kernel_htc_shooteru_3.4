@@ -158,6 +158,31 @@
 #define SHOOTERU_SPI_CS                 (35)
 #define SHOOTERU_SPI_CLK                (36)
 
+/* CAMERA GPIO */
+#define SHOOTERU_CAM_I2C_SDA		(47)
+#define SHOOTERU_CAM_I2C_SCL		(48)
+
+#define SHOOTERU_SP3D_GATE		(107)
+#define SHOOTERU_SP3D_CORE_GATE		(58)
+#define SHOOTERU_SP3D_SYS_RST		(102)
+#define SHOOTERU_SP3D_PDX		(137)
+
+#define SHOOTERU_S5K4E1_PD		(137)
+#define SHOOTERU_S5K4E1_INTB		(102)
+#define SHOOTERU_S5K4E1_VCM_PD		(58)
+
+#define SHOOTERU_SP3D_SPI_DO		(41)
+#define SHOOTERU_SP3D_SPI_DI		(42)
+#define SHOOTERU_SP3D_SPI_CS		(43)
+#define SHOOTERU_SP3D_SPI_CLK		(44)
+
+#define SHOOTERU_SP3D_MCLK		(32)
+#define SHOOTERU_WEBCAM_STB		(140)
+#define SHOOTERU_WEBCAM_RST		(138)
+#define SHOOTERU_CAM_SEL			(141)
+#define SHOOTERU_SP3D_INT		(106)
+
+
 
 
 /* LCM */
