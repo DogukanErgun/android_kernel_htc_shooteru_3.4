@@ -1668,6 +1668,7 @@ static irqreturn_t atmel_irq_thread(int irq, void *ptr)
 				printk(KERN_INFO "[TP]Touch Noise suppression: \n");
 				// msg_byte_num = 4;
 			} else
+				if (1==0)
 				printk(KERN_INFO "[TP]Touch Unhandled: \n");
 
 			/* if (data[MSG_RID] != 0xFF) {
