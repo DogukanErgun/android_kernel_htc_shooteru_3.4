@@ -1885,7 +1885,7 @@ static void __init msm8x60_calculate_reserve_sizes(void)
 
 static int msm8x60_paddr_to_memtype(unsigned int paddr)
 {
-	if (paddr >= 0x40000000 && paddr < 0x70000000)
+	if (paddr >= 0x40000000 && paddr < 0x80000000)
 		return MEMTYPE_EBI1;
 	if (paddr >= 0x38000000 && paddr < 0x40000000)
 		return MEMTYPE_SMI;
@@ -2119,6 +2119,176 @@ static struct i2c_board_info __initdata mpu3050_GSBI10_boardinfo_XC[] = {
 	},
 };
 
+#define PM_GPIO_CDC_RST_N 20
+#define GPIO_CDC_RST_N PM8058_GPIO_PM_TO_SYS(PM_GPIO_CDC_RST_N)
+
+static struct regulator *vreg_timpani_1;
+static struct regulator *vreg_timpani_2;
+
+static unsigned int msm_timpani_setup_power(void)
+{
+	int rc;
+
+	vreg_timpani_1 = regulator_get(NULL, "8058_l0");
+	if (IS_ERR(vreg_timpani_1)) {
+		pr_err("%s: Unable to get 8058_l0\n", __func__);
+		return -ENODEV;
+	}
+
+	vreg_timpani_2 = regulator_get(NULL, "8058_s3");
+	if (IS_ERR(vreg_timpani_2)) {
+		pr_err("%s: Unable to get 8058_s3\n", __func__);
+		regulator_put(vreg_timpani_1);
+		return -ENODEV;
+	}
+
+	rc = regulator_set_voltage(vreg_timpani_1, 1200000, 1200000);
+	if (rc) {
+		pr_err("%s: unable to set L0 voltage to 1.2V\n", __func__);
+		goto fail;
+	}
+
+	rc = regulator_set_voltage(vreg_timpani_2, 1800000, 1800000);
+	if (rc) {
+		pr_err("%s: unable to set S3 voltage to 1.8V\n", __func__);
+		goto fail;
+	}
+
+	rc = regulator_enable(vreg_timpani_1);
+	if (rc) {
+		pr_err("%s: Enable regulator 8058_l0 failed\n", __func__);
+		goto fail;
+	}
+
+	/* The settings for LDO0 should be set such that
+	*  it doesn't require to reset the timpani. */
+	rc = regulator_set_optimum_mode(vreg_timpani_1, 5000);
+	if (rc < 0) {
+		pr_err("Timpani regulator optimum mode setting failed\n");
+		goto fail;
+	}
+
+	rc = regulator_enable(vreg_timpani_2);
+	if (rc) {
+		pr_err("%s: Enable regulator 8058_s3 failed\n", __func__);
+		regulator_disable(vreg_timpani_1);
+		goto fail;
+	}
+
+	rc = gpio_request(GPIO_CDC_RST_N, "CDC_RST_N");
+	if (rc) {
+		pr_err("%s: GPIO Request %d failed\n", __func__,
+			GPIO_CDC_RST_N);
+		regulator_disable(vreg_timpani_1);
+		regulator_disable(vreg_timpani_2);
+		goto fail;
+	} else {
+		gpio_direction_output(GPIO_CDC_RST_N, 1);
+		usleep_range(1000, 1050);
+		gpio_direction_output(GPIO_CDC_RST_N, 0);
+		usleep_range(1000, 1050);
+		gpio_direction_output(GPIO_CDC_RST_N, 1);
+		gpio_free(GPIO_CDC_RST_N);
+	}
+	return rc;
+
+fail:
+	regulator_put(vreg_timpani_1);
+	regulator_put(vreg_timpani_2);
+	return rc;
+}
+
+static void msm_timpani_shutdown_power(void)
+{
+	int rc;
+
+	rc = regulator_disable(vreg_timpani_1);
+	if (rc)
+		pr_err("%s: Disable regulator 8058_l0 failed\n", __func__);
+
+	regulator_put(vreg_timpani_1);
+
+	rc = regulator_disable(vreg_timpani_2);
+	if (rc)
+		pr_err("%s: Disable regulator 8058_s3 failed\n", __func__);
+
+	regulator_put(vreg_timpani_2);
+}
+
+/* Power analog function of codec */
+static struct regulator *vreg_timpani_cdc_apwr;
+static int msm_timpani_codec_power(int vreg_on)
+{
+	int rc = 0;
+
+	if (!vreg_timpani_cdc_apwr) {
+
+		vreg_timpani_cdc_apwr = regulator_get(NULL, "8058_s4");
+
+		if (IS_ERR(vreg_timpani_cdc_apwr)) {
+			pr_err("%s: vreg_get failed (%ld)\n",
+			__func__, PTR_ERR(vreg_timpani_cdc_apwr));
+			rc = PTR_ERR(vreg_timpani_cdc_apwr);
+			return rc;
+		}
+	}
+
+	if (vreg_on) {
+
+		rc = regulator_set_voltage(vreg_timpani_cdc_apwr,
+				2200000, 2200000);
+		if (rc) {
+			pr_err("%s: unable to set 8058_s4 voltage to 2.2 V\n",
+					__func__);
+			goto vreg_fail;
+		}
+
+		rc = regulator_enable(vreg_timpani_cdc_apwr);
+		if (rc) {
+			pr_err("%s: vreg_enable failed %d\n", __func__, rc);
+			goto vreg_fail;
+		}
+	} else {
+		rc = regulator_disable(vreg_timpani_cdc_apwr);
+		if (rc) {
+			pr_err("%s: vreg_disable failed %d\n",
+			__func__, rc);
+			goto vreg_fail;
+		}
+	}
+	return 0;
+
+vreg_fail:
+	regulator_put(vreg_timpani_cdc_apwr);
+	vreg_timpani_cdc_apwr = NULL;
+	return rc;
+}
+
+static struct marimba_codec_platform_data timpani_codec_pdata = {
+	.marimba_codec_power =  msm_timpani_codec_power,
+};
+
+#define TIMPANI_SLAVE_ID_CDC_ADDR		0X77
+#define TIMPANI_SLAVE_ID_QMEMBIST_ADDR		0X66
+
+static struct marimba_platform_data timpani_pdata = {
+	.slave_id[MARIMBA_SLAVE_ID_CDC] = TIMPANI_SLAVE_ID_CDC_ADDR,
+	.slave_id[MARIMBA_SLAVE_ID_QMEMBIST] = TIMPANI_SLAVE_ID_QMEMBIST_ADDR,
+	.marimba_setup = msm_timpani_setup_power,
+	.marimba_shutdown = msm_timpani_shutdown_power,
+	.codec = &timpani_codec_pdata,
+	.tsadc_ssbi_adap = MARIMBA_SSBI_ADAP,
+};
+
+#define TIMPANI_I2C_SLAVE_ADDR	0xD
+
+static struct i2c_board_info msm_i2c_gsbi7_timpani_info[] = {
+	{
+		I2C_BOARD_INFO("timpani", TIMPANI_I2C_SLAVE_ADDR),
+		.platform_data = &timpani_pdata,
+	},
+};
+
 #ifdef CONFIG_I2C
 #define I2C_SURF 1
 #define I2C_FFA  (1 << 1)
@@ -2145,6 +2315,12 @@ static struct i2c_registry msm8x60_i2c_devices[] __initdata = {
 	},
 #endif
 #endif /*CONFIG_MSM_SSBI */
+	{
+		I2C_SURF | I2C_FFA | I2C_FLUID,
+		MSM_GSBI7_QUP_I2C_BUS_ID,
+		msm_i2c_gsbi7_timpani_info,
+		ARRAY_SIZE(msm_i2c_gsbi7_timpani_info),
+	},
 #ifdef CONFIG_MFD_TPS65200
 	{
 		I2C_SURF | I2C_FFA,
